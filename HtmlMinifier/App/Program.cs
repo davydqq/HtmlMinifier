@@ -28,15 +28,29 @@ var options = new MinifyHtmlOptions()
 
 
 var converter = new Converter();
-string markdown = converter.Convert(html);
-File.WriteAllText($"/Users/davydkonopatskyi/Desktop/HtmlMinifier/HtmlMinifier/App/sources/md-{DateTimeOffset.Now.ToString("h:mm:ss")}.md", markdown);
+// string markdown = converter.Convert(html);
+// File.WriteAllText($"/Users/davydkonopatskyi/Desktop/HtmlMinifier/HtmlMinifier/App/sources/md-{DateTimeOffset.Now.ToString("h.mm.ss")}.md", markdown);
 
 var outHtml = await ProcessHtml(html, options);
 
 Console.WriteLine("Length after: {0}", outHtml.Length);
 Console.WriteLine("Win: {0}", 100 -  Math.Round((double)outHtml.Length / html.Length * 100, 2));
 
-File.WriteAllText($"/Users/davydkonopatskyi/Desktop/HtmlMinifier/HtmlMinifier/App/sources/{DateTimeOffset.Now.ToString("h:mm:ss")}.html", outHtml);
+// Get the base directory of the executable
+var executionPath = AppDomain.CurrentDomain.BaseDirectory;
+
+// Traverse up to the desired directory
+var projectPath = Path.GetFullPath(Path.Combine(executionPath, @"..\..\.."));
+
+// Ensure the 'sources' directory exists
+var sourcesDirectory = Path.Combine(projectPath, "sources");
+Directory.CreateDirectory(sourcesDirectory);
+
+// Construct the output file path
+var outputPath = Path.Combine(sourcesDirectory, $"{DateTimeOffset.Now:hh.mm.ss}.html");
+
+// Write the output file
+File.WriteAllText(outputPath, outHtml);
 
 async Task<string> ProcessHtml(string inputHtml, MinifyHtmlOptions options)
 {
