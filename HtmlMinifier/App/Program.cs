@@ -26,6 +26,7 @@ var options = new MinifyHtmlOptions()
     RemoveLabel = true
 };
 
+
 var converter = new Converter();
 string markdown = converter.Convert(html);
 File.WriteAllText($"/Users/davydkonopatskyi/Desktop/HtmlMinifier/HtmlMinifier/App/sources/md-{DateTimeOffset.Now.ToString("h:mm:ss")}.md", markdown);
