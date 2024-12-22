@@ -18,7 +18,6 @@ var options = new MinifyHtmlOptions()
     RemoveStyles = false,
     RemoveLinks = false,
     RemoveSvg = false,
-    RemoveEmptyTags = false,
     RemoveSelect = false,
     RemoveMeta = false,
     RemoveInput = false,
@@ -62,7 +61,8 @@ if (true)
     HtmlHelper.RemoveAllWithTags(document, new []{ "script", "style", "link", "noscript", "svg", "select", "meta", "input", "label"});
     HtmlHelper.RemoveEmptyTextNodes(document.DocumentElement);
     HtmlHelper.RemoveEvents(document);
-    HtmlHelper.RemoveAttributes(document);
+    HtmlHelper.RemoveAttributes(document, new List<string>() { "style" });
+    HtmlHelper.LimitChildrenByClass(document);
     HtmlHelper.ReplaceTagsWithText(document.DocumentElement, new[] { "a", "p", "bold", "span", "strong", "italic", "h1", "h2", "h3" });
     HtmlHelper.ReplaceNewLinesWithOneLineText(document);
     
@@ -96,7 +96,7 @@ async Task<string> ProcessHtml(string inputHtml, MinifyHtmlOptions options)
         HtmlHelper.CleanWhitespace(document.DocumentElement);   
     }
     
-    HtmlHelper.RemoveAttributes(document);
+    HtmlHelper.RemoveAttributes(document, null);
     HtmlHelper.RemoveEvents(document);
 
     var resultHtml = inputHtml;
@@ -159,32 +159,7 @@ async Task<string> ProcessHtml(string inputHtml, MinifyHtmlOptions options)
 
         resultHtml = document.DocumentElement.OuterHtml;
     }
-    // todo
-    // split content into groups by tag and parent if not exist
-    // replace classes with custom
-    if (options.RemoveEmptyTags)
-    {
-        while (true)
-        {
-            var prev = resultHtml;
 
-            // Define regex pattern for empty tags
-            string emptyTagPattern = @"<(\w+)(\s*[^>]*)>\s*</\1>";
-            // Remove empty tags
-            resultHtml = Regex.Replace(resultHtml, emptyTagPattern, string.Empty);
-
-            // Define regex pattern for tags with only whitespace or new lines inside
-            string whitespaceInsideTagPattern = @"<(\w+)(\s*[^>]*)>\s*</\1>";
-            // Remove the whitespace or new lines inside the tags
-            resultHtml = Regex.Replace(resultHtml, whitespaceInsideTagPattern, @"<$1$2></$1>");
-
-            if (prev == resultHtml)
-            {
-                break;
-            }
-        }
-    }
-    
     if (options.RemoveCommentsRegex)
     {
         resultHtml = resultHtml.RemoveCommentsLines().RemoveEmptyLines();

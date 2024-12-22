@@ -57,7 +57,7 @@ public static class HtmlHelper
                 CleanWhitespace(child);
     }
 
-    public static void RemoveAttributes(IDocument document)
+    public static void RemoveAttributes(IDocument document, List<string> attributes)
     {
         // Select all elements in the document
         var allElements = document.All;
@@ -66,6 +66,8 @@ public static class HtmlHelper
         {
             "aria-label", "title", "alt"
         };
+        
+        attributes?.ForEach(x => attributesToBeRemoved.Add(x));
 
         foreach (var element in allElements)
         {
@@ -234,6 +236,34 @@ public static class HtmlHelper
                 }
             }
         }
+    }
+    
+    public static void LimitChildrenByClass(IDocument document)
+    {
+        // Select all elements
+        var elements = document.All;
 
+        // Process each element to limit children with the same class attribute to 2
+        foreach (var element in elements)
+        {
+            // Group children by class attribute
+            var childrenGroupedByClass = element.Children
+                .Where(child => child.HasAttribute("class"))
+                .GroupBy(child => child.GetAttribute("class"));
+
+            foreach (var group in childrenGroupedByClass)
+            {
+                // Skip groups with 2 or fewer children
+                if (group.Count() > 2)
+                {
+                    // Keep only the first two children and remove the rest
+                    var childrenToRemove = group.OrderBy(x => x.TextContent.Length).Skip(2).ToList();
+                    foreach (var child in childrenToRemove)
+                    {
+                        child.Remove();
+                    }
+                }
+            }
+        }
     }
 }

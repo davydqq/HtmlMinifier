@@ -11,9 +11,7 @@ public class MinifyHtmlOptions
     public bool RemoveLinks { set; get; }
 
     public bool RemoveSvg { set; get; }
-
-    public bool RemoveEmptyTags { set; get; }
-
+    
     public bool RemoveSelect { set; get; }
 
     public bool RemoveInput { set; get; }
