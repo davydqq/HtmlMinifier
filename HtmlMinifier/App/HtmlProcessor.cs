@@ -27,7 +27,7 @@ public static class HtmlProcessor
 
         // todo one line html for gpt;
         
-        SaveFile(output);
+        SaveFile(output, "");
     }
 
     // additionalStyle = padding: 15px; border: 3px solid #ababab !important;
@@ -42,13 +42,106 @@ public static class HtmlProcessor
         element.SetAttribute("style", updatedStyle);
     }
     
-    private static void SaveFile(string content)
+    public static async Task ModifyElementsById(string htmlContent, string elementId, ElementAction action)
+    {
+        var context = BrowsingContext.New(Configuration.Default);
+        var document = await context.OpenAsync(req => req.Content(htmlContent));
+
+        // Find the element by ID
+        var targetElement = document.GetElementById(elementId);
+        if (targetElement == null)
+        {
+            Console.WriteLine($"Element with ID '{elementId}' not found.");
+            return;
+        }
+
+        // Get all parent elements and the target element's descendants
+        var parentsAndDescendants = GetAllParentsAndDescendants(targetElement);
+
+        // Get all <style> elements and their parents
+        var styleElementsAndParents = new HashSet<IElement>();
+        var styleElements = document.QuerySelectorAll("style");
+        foreach (var styleElement in styleElements)
+        {
+            styleElementsAndParents.Add(styleElement);
+            var parent = styleElement.ParentElement;
+            while (parent != null)
+            {
+                styleElementsAndParents.Add(parent);
+                parent = parent.ParentElement;
+            }
+        }
+        
+        parentsAndDescendants.UnionWith(styleElementsAndParents);
+        
+        // Get all elements
+        var allElements = document.All.ToList();
+
+        foreach (var element in allElements)
+        {
+            // Skip the target element, its parents, and its descendants
+            if (parentsAndDescendants.Contains(element))
+                continue;
+
+            if (element.TagName.ToLower() == "style")
+            {
+                continue;
+            }
+            
+            switch (action)
+            {
+                case ElementAction.SetOpacity:
+                    SetStylesForElement(element, "opacity: 0;");
+                    break;
+                case ElementAction.SetDisplayNone:
+                    SetStylesForElement(element, "display: none;");
+                    break;
+                case ElementAction.RemoveOthers:
+                    element.Remove();
+                    break;
+            }
+        }
+        
+        SaveFile(document.DocumentElement.OuterHtml, $"{elementId}.{action.ToString()}");
+    }
+    
+    private static HashSet<IElement> GetAllParentsAndDescendants(IElement element)
+    {
+        var result = new HashSet<IElement>();
+
+        // Add the element itself
+        result.Add(element);
+
+        // Add all parents
+        var current = element.ParentElement;
+        while (current != null)
+        {
+            result.Add(current);
+            current = current.ParentElement;
+        }
+
+        // Add all descendants
+        AddDescendants(element, result);
+
+        return result;
+    }
+    
+    private static void AddDescendants(IElement element, HashSet<IElement> result)
+    {
+        foreach (var child in element.Children)
+        {
+            result.Add(child);
+            AddDescendants(child, result);
+        }
+    }
+    
+    private static void SaveFile(string content, string fileNamePrefix)
     {
         var executionPath = AppDomain.CurrentDomain.BaseDirectory;
         var projectPath = Path.GetFullPath(Path.Combine(executionPath, @"..\..\.."));
         var sourcesDirectory = Path.Combine(projectPath, "output");
         Directory.CreateDirectory(sourcesDirectory);
-        var outputPath = Path.Combine(sourcesDirectory, $"{DateTimeOffset.Now:hh.mm.ss}.html");
+        var outputPath = Path.Combine(sourcesDirectory, $"{fileNamePrefix}.{DateTimeOffset.Now:hh.mm.ss}.html");
         File.WriteAllText(outputPath, content);
     }
 }
