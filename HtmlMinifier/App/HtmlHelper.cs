@@ -139,7 +139,7 @@ public static class HtmlHelper
         {
             if (currentDepth > maxDepth && currentNode is IElement element)
             {
-                var concatenatedText = element.TextContent.GetConcatText();
+                var text = new string(element.TextContent);
                 
                 // Remove all child nodes of the element
                 while (element.HasChildNodes)
@@ -148,7 +148,7 @@ public static class HtmlHelper
                 }
 
                 // Set the concatenated text as the content of the element
-                element.TextContent = concatenatedText;
+                element.TextContent = text;
 
                 return;
             }
