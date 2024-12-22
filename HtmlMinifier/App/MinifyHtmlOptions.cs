@@ -21,4 +21,10 @@ public class MinifyHtmlOptions
     public bool RemoveLabel { set; get; }
 
     public bool RemoveMeta { set; get; }
+    
+    public bool RemoveCommentsRegex { set; get; }
+    
+    public bool RemoveWhiteSpaces { set; get; }
+    
+    public bool AddMarginToDiv { set; get; }
 }
