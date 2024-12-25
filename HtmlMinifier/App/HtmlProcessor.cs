@@ -11,7 +11,7 @@ public static class HtmlProcessor
         var document = await context.OpenAsync(req => req.Content(html));
         double averageDepth = HtmlHelper.CalculateAverageDepth(document.DocumentElement);
         Console.WriteLine($"Average HTML Depth: {averageDepth}");
-        var depth = (int)(Math.Floor(averageDepth) / 1.5);
+        var depth = (int)(Math.Floor(averageDepth) / 1.2);
         Console.WriteLine($"Depth: {depth}");
     
         HtmlHelper.ReplaceDeepElementsWithText(document.DocumentElement, maxDepth: depth);
@@ -42,16 +42,16 @@ public static class HtmlProcessor
         element.SetAttribute("style", updatedStyle);
     }
     
-    public static async Task ModifyElementsById(string htmlContent, string elementId, ElementAction action)
+    public static async Task SelectHtml(string htmlContent, string selector, ElementAction action)
     {
         var context = BrowsingContext.New(Configuration.Default);
         var document = await context.OpenAsync(req => req.Content(htmlContent));
 
         // Find the element by ID
-        var targetElement = document.GetElementById(elementId);
+        var targetElement = document.QuerySelector(selector);
         if (targetElement == null)
         {
-            Console.WriteLine($"Element with ID '{elementId}' not found.");
+            Console.WriteLine($"Element with ID '{selector}' not found.");
             return;
         }
 
@@ -102,7 +102,7 @@ public static class HtmlProcessor
             }
         }
         
-        SaveFile(document.DocumentElement.OuterHtml, $"{elementId}.{action.ToString()}");
+        SaveFile(document.DocumentElement.OuterHtml, $"{selector}.{action.ToString()}");
     }
     
     private static HashSet<IElement> GetAllParentsAndDescendants(IElement element)

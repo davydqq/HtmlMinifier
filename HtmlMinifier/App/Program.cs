@@ -2,7 +2,7 @@
 
 using App;
 
-var html = File.ReadAllText("sources/auto-ria.html");
+var html = File.ReadAllText("sources/coin-market-cap.html");
 // await HtmlProcessor.CutHtml(html);
 
-await HtmlProcessor.ModifyElementsById(html, "catalogSearchAT", ElementAction.RemoveOthers);
+await HtmlProcessor.SelectHtml(html, "div.cmc-body-wrapper", ElementAction.SetDisplayNone);
